@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     public float turnSpeed;
 
     Animator anim;
+    public Transform playerBoat;
 
     // Start is called before the first frame update
     void Start()
@@ -16,6 +17,7 @@ public class PlayerController : MonoBehaviour
         turnSpeed = 20f;
 
         anim = GetComponent<Animator>();
+        playerBoat = transform.GetChild(0);
     }
 
     // Update is called once per frame
@@ -34,27 +36,36 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            transform.Rotate(new Vector3(0f, - turnSpeed * Time.deltaTime, 0f));
-            anim.SetBool("Left", true);
+            TurnLeft();
         }
-        else
-            anim.SetBool("Left", false);
         if (Input.GetKey(KeyCode.RightArrow))
         {
-            transform.Rotate(new Vector3(0f, turnSpeed * Time.deltaTime, 0f));
-            anim.SetBool("Right", true);
+            TurnRight();
         }
-        else
-            anim.SetBool("Right", false);
+        if (!Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
+            TurnIdle();
     }
 
     void TurnLeft()
     {
         transform.Rotate(new Vector3(0f, - turnSpeed * Time.deltaTime, 0f));
+        if (playerBoat.localEulerAngles.y > 150)
+            playerBoat.Rotate(new Vector3(0f, - turnSpeed * Time.deltaTime, 0f));
     }
 
     void TurnRight()
     {
         transform.Rotate(new Vector3(0f, turnSpeed * Time.deltaTime, 0f));
+        if (playerBoat.localEulerAngles.y < 210)
+            playerBoat.Rotate(new Vector3(0f, turnSpeed * Time.deltaTime, 0f));
+    }
+
+    void TurnIdle()
+    {
+        if (playerBoat.localEulerAngles.y < 180)
+            playerBoat.Rotate(new Vector3(0f, turnSpeed * Time.deltaTime, 0f));
+        else 
+            playerBoat.Rotate(new Vector3(0f, - turnSpeed * Time.deltaTime, 0f));
+
     }
 }
