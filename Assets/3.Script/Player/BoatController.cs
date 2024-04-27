@@ -4,46 +4,38 @@ using UnityEngine;
 
 public class BoatController : MonoBehaviour
 {
-    public float moveSpeed = 10f;
-    public float turnSpeed = 20f;
+    public float speed = 10.0f;       // 전진 속도
+    public float rotationSpeed = 40.0f;  // 회전 속도
+    public float smoothTime = 0.3f;       // 회전의 부드러운 전환 정도
 
-    Animator anim;
-    public Transform playerBoat;
     private Rigidbody rb;
+    private float targetYRotation;        // 목표 y축 회전 각도
+    private float rotationVelocity;       // 회전 속도 (각속도가 아닌 변화율)
 
-    // Start is called before the first frame update
     void Start()
     {
-        anim = GetComponent<Animator>();
-        playerBoat = transform.GetChild(0);
         rb = GetComponent<Rigidbody>();
+        rb.useGravity = true; // 중력 사용
+        targetYRotation = transform.eulerAngles.y;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        MoveForward();
-        Turn();
+        float rotationInput = Input.GetAxis("Horizontal");
+        if (Mathf.Abs(rotationInput) > 0.01f)
+        {
+            targetYRotation += rotationInput * rotationSpeed * Time.deltaTime;  // 목표 회전 각도 계산
+        }
+
+        // 현재 각도에서 목표 각도로 부드럽게 회전
+        float yRotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetYRotation, ref rotationVelocity, smoothTime);
+        transform.rotation = Quaternion.Euler(0, yRotation, 0);
     }
 
-    void MoveForward()
+    void FixedUpdate()
     {
-        Vector3 move = transform.right * moveSpeed * Time.deltaTime;
-        rb.MovePosition(rb.position + move);
-    }
-
-    void Turn()
-    {
-        float turn = 0f;
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            turn = -turnSpeed;
-        }
-        else if (Input.GetKey(KeyCode.RightArrow))
-        {
-            turn = turnSpeed;
-        }
-        Quaternion deltaRotation = Quaternion.Euler(new Vector3(0f, turn * Time.deltaTime, 0f));
-        rb.MoveRotation(rb.rotation * deltaRotation);
+        // X축 방향으로 항상 전진하는 움직임
+        Vector3 rightMove = transform.right * speed * Time.fixedDeltaTime;
+        rb.MovePosition(rb.position + rightMove);
     }
 }
